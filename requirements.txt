@@ -3,3 +3,5 @@ flask-cors
 pdfplumber
 python-docx
 openai
+gunicorn
+
