@@ -5,7 +5,14 @@ from tailor_ai import generate_tailored_resume, calculate_match_score
 import os
 
 app = Flask(__name__)
-CORS(app)  # Enable CORS for frontend to talk to backend
+CORS(app)
+
+@app.after_request
+def add_headers(response):
+    response.headers.add('Access-Control-Allow-Origin', '*')
+    response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
+    response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
+    return response
 
 @app.route("/", methods=["GET"])
 def home():
@@ -14,20 +21,24 @@ def home():
 @app.route("/analyze", methods=["POST"])
 def analyze_resume():
     try:
+        print("📩 Received POST to /analyze")
+        print("Files:", request.files)
+        print("Form data:", request.form)
+
         resume_file = request.files["resume"]
         job_description = request.form["job_description"]
 
-        print("✅ Received resume:", resume_file.filename)
-        print("✅ Received job description:", job_description[:100])
-
         resume_text = extract_text_from_file(resume_file)
-        print("✅ Extracted resume text length:", len(resume_text))
+        print("📝 Extracted Resume Text:", resume_text[:300])
+
+        if not resume_text.strip():
+            return jsonify({"error": "❌ Resume content could not be extracted."}), 400
 
         match_score = calculate_match_score(resume_text, job_description)
-        print("✅ Match score calculated:", match_score)
+        print("🎯 Match Score:", match_score)
 
         tailored_resume = generate_tailored_resume(resume_text, job_description)
-        print("✅ Tailored resume generated.")
+        print("📄 Tailored Resume Generated.")
 
         return jsonify({
             "match_score": match_score,
@@ -38,9 +49,7 @@ def analyze_resume():
         print("❌ Error in analyze_resume():", e)
         return jsonify({"error": str(e)}), 500
 
-# ✅ Proper port binding for Render (IMPORTANT!)
-if __name__ == '__main__':
-    port = int(os.environ.get("PORT", 5000))  # Render will inject the correct port
-    app.run(debug=False, host='0.0.0.0', port=port)
-
-
+# ✅ Correct port binding for Render
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host='0.0.0.0', port=port)
