@@ -2,9 +2,14 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 from resume_parser import extract_text_from_file
 from tailor_ai import generate_tailored_resume, calculate_match_score
+import os
 
 app = Flask(__name__)
-CORS(app)  # Allow frontend on Netlify to connect
+CORS(app)
+
+@app.route("/", methods=["GET"])
+def home():
+    return "✅ Resume Tailor Backend is live"
 
 @app.route("/analyze", methods=["POST"])
 def analyze_resume():
@@ -32,8 +37,6 @@ def analyze_resume():
     except Exception as e:
         print("❌ Error in analyze_resume():", e)
         return jsonify({"error": str(e)}), 500
-
-import os
 
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
