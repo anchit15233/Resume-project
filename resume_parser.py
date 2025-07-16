@@ -17,4 +17,4 @@ def extract_text_from_file(file):
         return "\n".join([para.text for para in doc.paragraphs])
 
     else:
-        return "Unsupported file format."
+        return "Unsupported file format. Please upload a PDF or DOCX file."
